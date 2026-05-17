@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    /* 1. Module Configuration (The Critical Part) */
+    "module": "CommonJS",                  /* Compiles imports to 'require()' */
+    "moduleResolution": "node",            /* Standard Node.js resolution */
+    "esModuleInterop": true,               /* Allows importing CJS modules as if they were ESM (e.g., import express from 'express') */
+    "resolveJsonModule": true,             /* Allows importing .json files directly */
+
+    /* 2. Output & Environment */
+    "target": "ES2022",                    /* Node 18+ supports ES2022 features (async/await, etc.) natively */
+    "outDir": "./dist",                    /* Where compiled .js files go */
+    "rootDir": "./src",                    /* Where your .ts files live */
+    "removeComments": true,                /* meaningful for production builds */
+    
+    /* 3. Type Checking (Best Practices) */
+    "strict": true,                        /* Enable all strict type-checking options */
+    "noImplicitAny": true,                 /* Catch variables with 'any' type */
+    "strictNullChecks": true,              /* protect against 'undefined' is not an object */
+    "forceConsistentCasingInFileNames": true, /* Prevents issues between Windows/Mac/Linux filesystems */
+    "skipLibCheck": true                   /* Speeds up compilation by ignoring errors in node_modules .d.ts files */
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

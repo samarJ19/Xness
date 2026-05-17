@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. The User
+model User {
+  id       String    @id @default(uuid())
+  email    String    @unique
+  password String
+  balances Balance[]
+  // Relationship: A user has orders
+  orders   Order[]
+  userStocks UserStock[]
+}
+model UserStock {
+  id          String @id @default(uuid())
+  userId      String
+  stockSymbol String
+  quantity    Int    // Available to sell
+  locked      Int    @default(0) // Tied up in pending SELL orders
+
+  user User @relation(fields: [userId], references: [id])
+  @@unique([userId, stockSymbol])
+}
+// 2. The Balance (The "Locking" logic)
+// Why not put this inside User? Because locking rows on the User table 
+// might block login/profile updates. Keeping it separate is safer for scaling.
+model Balance {
+  id     String @id @default(uuid())
+  userId String @unique
+  amount Int    @default(0) // Available to spend
+  locked Int    @default(0) // Tied up in orders
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// 3. The Order (The core entity)
+model Order {
+  id          String @id @default(uuid())
+  userId      String
+  stockSymbol String // e.g. "TATA"
+
+  price    Int // Stored in Cents!
+  quantity Int
+
+  // Designing for "Status": We need to know if it's open or done.
+  // Enum is better than String because it prevents typos like "fild" instead of "filled".
+  status OrderStatus
+
+  // Designing for "Side": Buy or Sell
+  side OrderSide
+  type OrderType
+
+  user           User    @relation(fields: [userId], references: [id])
+  tradesAsBuyer  Trade[] @relation("TradeBuyer")
+  tradesAsSeller Trade[] @relation("TradeSeller")
+  // Access Pattern: "Show me all FILLED orders for User X"
+  // We need an index on userId to make this fast.
+
+  @@index([userId])
+}
+
+model Trade {
+  id String @id @default(uuid())
+
+  // The Snapshot Data (CRITICAL)
+  price     Int // The price this specific trade executed at
+  qty       Int
+  timestamp DateTime @default(now())
+
+  // The Relationships
+  bidOrderId String
+  askOrderId String
+
+  bidOrder Order @relation("TradeBuyer", fields: [bidOrderId], references: [id])
+  askOrder Order @relation("TradeSeller", fields: [askOrderId], references: [id])
+
+  @@index([bidOrderId])
+  @@index([askOrderId])
+}
+
+enum OrderStatus {
+  PENDING
+  FILLED
+  PARTIALLY_FILLED
+  CANCELLED
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderType {
+  LIMIT
+  MARKET
+}
