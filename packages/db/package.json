@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "commonjs",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },

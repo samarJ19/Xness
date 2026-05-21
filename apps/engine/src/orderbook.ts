@@ -46,10 +46,14 @@ export function placeOrder(
 
     if (side === "buy") {
         for (let i = 0; i < book.asks.length; i++) {
-            if (book.asks[i].price <= price) {
-                const maker = book.asks[i];
-                if (book.asks[i].qty > remainingQty) {
-                    book.asks[i].qty -= remainingQty;
+            const maker = book.asks[i];
+            if (!maker) {
+                continue;
+            }
+
+            if (maker.price <= price) {
+                if (maker.qty > remainingQty) {
+                    maker.qty -= remainingQty;
                     logTrade(maker, remainingQty, maker.price, stock);
                     executions.push({
                         buyerOrderId: orderId,
@@ -61,23 +65,23 @@ export function placeOrder(
                         executionQty: remainingQty,
                     });
                     return executions;
-                } else {
-                    const matchedQty = maker.qty;
-                    remainingQty -= matchedQty;
-                    logTrade(maker, matchedQty, maker.price, stock);
-                    executions.push({
-                        buyerOrderId: orderId,
-                        sellerOrderId: maker.orderId,
-                        buyerUserId: userId,
-                        sellerUserId: maker.userId,
-                        stockSymbol: stock,
-                        executionPrice: maker.price,
-                        executionQty: matchedQty,
-                    });
-                    book.asks.splice(i, 1);
-                    i--; 
-                    if (remainingQty === 0) return executions;
                 }
+
+                const matchedQty = maker.qty;
+                remainingQty -= matchedQty;
+                logTrade(maker, matchedQty, maker.price, stock);
+                executions.push({
+                    buyerOrderId: orderId,
+                    sellerOrderId: maker.orderId,
+                    buyerUserId: userId,
+                    sellerUserId: maker.userId,
+                    stockSymbol: stock,
+                    executionPrice: maker.price,
+                    executionQty: matchedQty,
+                });
+                book.asks.splice(i, 1);
+                i--;
+                if (remainingQty === 0) return executions;
             }
         }
         book.bids.push({ orderId, userId, price, qty: remainingQty, type: "buy" });
@@ -85,10 +89,14 @@ export function placeOrder(
     } else {
         // side === "sell"
         for (let i = 0; i < book.bids.length; i++) {
-            if (book.bids[i].price >= price) {
-                const maker = book.bids[i];
-                if (book.bids[i].qty > remainingQty) {
-                    book.bids[i].qty -= remainingQty;
+            const maker = book.bids[i];
+            if (!maker) {
+                continue;
+            }
+
+            if (maker.price >= price) {
+                if (maker.qty > remainingQty) {
+                    maker.qty -= remainingQty;
                     logTrade(maker, remainingQty, maker.price, stock);
                     executions.push({
                         buyerOrderId: maker.orderId,
@@ -100,23 +108,23 @@ export function placeOrder(
                         executionQty: remainingQty,
                     });
                     return executions;
-                } else {
-                    const matchedQty = maker.qty;
-                    remainingQty -= matchedQty;
-                    logTrade(maker, matchedQty, maker.price, stock);
-                    executions.push({
-                        buyerOrderId: maker.orderId,
-                        sellerOrderId: orderId,
-                        buyerUserId: maker.userId,
-                        sellerUserId: userId,
-                        stockSymbol: stock,
-                        executionPrice: maker.price,
-                        executionQty: matchedQty,
-                    });
-                    book.bids.splice(i, 1);
-                    i--;
-                    if (remainingQty === 0) return executions;
                 }
+
+                const matchedQty = maker.qty;
+                remainingQty -= matchedQty;
+                logTrade(maker, matchedQty, maker.price, stock);
+                executions.push({
+                    buyerOrderId: maker.orderId,
+                    sellerOrderId: orderId,
+                    buyerUserId: maker.userId,
+                    sellerUserId: userId,
+                    stockSymbol: stock,
+                    executionPrice: maker.price,
+                    executionQty: matchedQty,
+                });
+                book.bids.splice(i, 1);
+                i--;
+                if (remainingQty === 0) return executions;
             }
         }
         book.asks.push({ orderId, userId, price, qty: remainingQty, type: "sell" });
