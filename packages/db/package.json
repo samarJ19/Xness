@@ -9,9 +9,10 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.json",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:seed": "prisma db seed"
+    "db:seed": "tsx src/seed.ts"
   },
   "keywords": [],
   "author": "",
