@@ -1,3 +1,5 @@
+import { config } from "dotenv";
+config();
 import express from "express";
 import orderRouter from "./routes/order.routes";
 const app = express();

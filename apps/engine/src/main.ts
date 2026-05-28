@@ -12,6 +12,7 @@ async function startWorker() {
       // "brpop" = Blocking Right Pop
       // It waits forever until 'orders' queue has data
       const response = await client.brPop("orders", 0);
+      console.log("Got response:", response);
 
       if (!response) {
         console.log("No response from Redis");

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec tsx src/main.ts"
+    "dev": "tsx watch src/main.ts",
+    "dev:settlement": "tsx watch src/settlement.ts"
   },
   "keywords": [],
   "author": "",
